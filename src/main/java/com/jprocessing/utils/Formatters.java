@@ -19,31 +19,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.jprocessing.entities;
-
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+package com.jprocessing.utils;
 
 /**
  *
  * @author rumatoest
  */
-@Entity
-@Table(name = "jp_categories")
-public class ProductCategory implements JpEntity<Long> {
+public class Formatters {
 
-    @Id
-    private Long pk;
-
-    @Override
-    public Long getPk() {
-        return pk;
+    /**
+     * Cast uppercase and trim input string null will convert to string.
+     */
+    public static String trimUpper(String s) {
+        if (s == null) {
+            return "";
+        }
+        return s.trim().toUpperCase();
     }
-
-    @Override
-    public void setPk(Long primaryKey) {
-        this.pk = primaryKey;
-    }
-
 }

@@ -26,12 +26,15 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 /**
+ * If customer want to receive a product (actually a service) continuously,
+ * then subscription to this product should be created. And according
+ * to product properties bills will be generated for each payment period.
  *
  * @author rumatoest
  */
 @Entity
-@Table(name = "jp_categories")
-public class ProductCategory implements JpEntity<Long> {
+@Table(name = "jp_subscriptions")
+public class Subscription implements JpEntity<Long> {
 
     @Id
     private Long pk;

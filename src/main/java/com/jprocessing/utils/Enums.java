@@ -19,31 +19,43 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.jprocessing.entities;
-
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+package com.jprocessing.utils;
 
 /**
  *
  * @author rumatoest
  */
-@Entity
-@Table(name = "jp_categories")
-public class ProductCategory implements JpEntity<Long> {
+public class Enums {
 
-    @Id
-    private Long pk;
-
-    @Override
-    public Long getPk() {
-        return pk;
+    /**
+     * Return enum value for ordinal (index) code.
+     * 
+     * @param enumClass You should provide enum.class first
+     * @param code Enum index
+     */
+    public static <E extends Enum<E>> E getValueOf(Class<E> enumClass, int code) {
+        for (E e : enumClass.getEnumConstants()) {
+            if (e.ordinal() == code) {
+                return e;
+            }
+        }
+        throw new IllegalArgumentException("No enum const "
+                + enumClass.getName() + " for code \'" + code + "\'");
     }
 
-    @Override
-    public void setPk(Long primaryKey) {
-        this.pk = primaryKey;
+    /**
+     * Return enum value for provided string representation
+     * 
+     * @param enumClass You should provide enum.class first
+     * @param valu String representasion of enum (toString() used)
+     */
+    public static <E extends Enum<E>> E getValueOf(Class<E> enumClass, String val) {
+        for (E e : enumClass.getEnumConstants()) {
+            if (e.toString().equals(val)) {
+                return e;
+            }
+        }
+        throw new IllegalArgumentException("No enum const "
+                + enumClass.getName() + " for value \'" + val + "\'");
     }
-
 }
