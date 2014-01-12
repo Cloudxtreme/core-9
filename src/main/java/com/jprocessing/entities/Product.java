@@ -36,7 +36,9 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "jp_products",
-    indexes = @Index(columnList = "sku"))
+    indexes = {
+        @Index(columnList = "sku"),
+        @Index(columnList = "is_deleted")})
 public class Product implements JpEntity<Long> {
 
     /**
@@ -60,6 +62,7 @@ public class Product implements JpEntity<Long> {
     public static final int SUBSCRIPTION_MONTH = 3;
 
     @Id
+    @Column(name = "id")
     private Long pk;
 
     @Override
@@ -90,7 +93,7 @@ public class Product implements JpEntity<Long> {
     }
 
     @Column(name = "is_fractional", nullable = false)
-    boolean fractional = false;
+    private boolean fractional = false;
 
     /**
      * Determine if product quantity can be measured in fractional numbers.
@@ -99,8 +102,43 @@ public class Product implements JpEntity<Long> {
         return fractional;
     }
 
+    @Column(name = "is_deleted", nullable = false)
+    private boolean deleted = false;
+
+    /**
+     * Return true if product is deleted.
+     */
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    /**
+     * Mark product as deleted.
+     * Deleted product should be visible only for administrators.
+     */
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
+
+    @Column(name = "is_available", nullable = false)
+    private boolean avaiable = true;
+
+    /**
+     * Return true if product is available for purchase
+     */
+    public boolean isAvaiable() {
+        return avaiable;
+    }
+
+    /**
+     * Set product availability
+     */
+    public void setAvaiable(boolean avaiable) {
+        this.avaiable = avaiable;
+    }
+
     @Column(name = "subscription_type", nullable = false)
-    int subscriptionType = 0;
+    private int subscriptionType = 0;
 
     /**
      * Check if customer can subscribe on this product
@@ -131,7 +169,7 @@ public class Product implements JpEntity<Long> {
     }
 
     @Column(name = "subscription_period", nullable = false)
-    int subscriptionPeriod = 0;
+    private int subscriptionPeriod = 0;
 
     /**
      * Return subscription period.

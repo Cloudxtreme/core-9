@@ -44,6 +44,7 @@ import javax.persistence.Table;
 public class ProductPrice implements JpEntity<Long> {
 
     @Id
+    @Column(name = "id")
     private Long pk;
 
     @Override

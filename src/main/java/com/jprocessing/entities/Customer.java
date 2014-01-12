@@ -25,38 +25,49 @@ import java.util.Set;
 
 /**
  * This class
- * 
+ *
  * @author rumatoest
  */
 public interface Customer extends JpEntity {
+
+    /**
+     * Check if provided unencrypted password match internal customer's password hash.
+     */
+    public boolean checkPassword(String password);
 
     /**
      * Should return true if customer account is active
      * or false if customer disabled
      */
     public boolean isActive();
-    
+
     /**
-     * Should return customer primary email. 
+     * Should return customer primary email.
      * This email should be used for significant system notifications.
      */
     public String getEmail();
-    
+
     /**
      * Return code names of the customers groups.
      * This code names have to be as primary keys, we will not expect
      * them to be changed.
      * Group names have to match next pattern "[0-9A-Z-_]+".
      * Only uppercase letters allowed.
-     * 
+     *
      * @return List of groups or empty List
      */
     public Set<String> getGroups();
-    
+
+    /**
+     * Return customer's login
+     */
+    public String getLogin();
+
     /**
      * Generates short string to identify customer up to 128 characters.
      * I'm recommending to use next patterns:
      * "LastName Name (Company)" or "LastName Name" for individuals.
      */
     public String getShortInfo();
+
 }

@@ -21,6 +21,7 @@
  */
 package com.jprocessing.entities;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -31,9 +32,10 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "jp_categories")
-public class ProductCategory implements JpEntity<Long> {
+public class Category implements JpEntity<Long> {
 
     @Id
+    @Column(name = "id")
     private Long pk;
 
     @Override

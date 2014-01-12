@@ -21,6 +21,7 @@
  */
 package com.jprocessing.entities;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -37,6 +38,7 @@ import javax.persistence.Table;
 public class Subscription implements JpEntity<Long> {
 
     @Id
+    @Column(name = "id")
     private Long pk;
 
     @Override
