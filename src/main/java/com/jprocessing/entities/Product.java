@@ -23,6 +23,8 @@ package com.jprocessing.entities;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Lob;
@@ -41,25 +43,34 @@ import javax.persistence.Table;
         @Index(columnList = "is_deleted")})
 public class Product implements JpEntity<Long> {
 
-    /**
-     * Product has no subscription
-     */
-    public static final int SUBSCRIPTION_NONE = 0;
+    private static final long serialVersionUID = 3598599915838510461L;
 
     /**
-     * Product subscription period is measured in days
+     * Describes subscription period type
      */
-    public static final int SUBSCRIPTION_DAY = 1;
+    public static enum Subscription {
 
-    /**
-     * Product subscription period is measured in weeks
-     */
-    public static final int SUBSCRIPTION_WEEK = 2;
-
-    /**
-     * Product subscription period is measured in months
-     */
-    public static final int SUBSCRIPTION_MONTH = 3;
+        /**
+         * Product has no subscription
+         */
+        NONE,
+        /**
+         * Product subscription period is measured in days
+         */
+        DAY,
+        /**
+         * Product subscription period is measured in weeks
+         */
+        WEEK,
+        /**
+         * Product subscription period is measured in months
+         */
+        MONTH,
+        /**
+         * Product subscription period is measured in years
+         */
+        YEAR,
+    }
 
     @Id
     @Column(name = "id")
@@ -137,34 +148,28 @@ public class Product implements JpEntity<Long> {
         this.avaiable = avaiable;
     }
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "subscription_type", nullable = false)
-    private int subscriptionType = 0;
+    private Subscription subscriptionType = Subscription.NONE;
 
     /**
      * Check if customer can subscribe on this product
      */
     public boolean hasSubscription() {
-        return this.subscriptionType == 0;
+        return this.subscriptionType != Subscription.NONE;
     }
 
     /**
      * Return subscription period type.
-     * See SUBSCRIPTION_* constants.
      */
-    public int getSubscriptionType() {
+    public Subscription getSubscriptionType() {
         return subscriptionType;
     }
 
     /**
      * Set subscription period type.
-     * See SUBSCRIPTION_* constants.
      */
-    public void setSubscriptionType(int subscriptionType) {
-        if (subscriptionType < SUBSCRIPTION_NONE
-            || subscriptionType > SUBSCRIPTION_WEEK) {
-            throw new IllegalArgumentException("Subscription type "
-                + subscriptionType + " is not valid!");
-        }
+    public void setSubscriptionType(Subscription subscriptionType) {
         this.subscriptionType = subscriptionType;
     }
 

@@ -24,7 +24,8 @@ package com.jprocessing.entities;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.Date;
+import java.math.BigDecimal;
+import java.util.Calendar;
 import java.util.Properties;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -41,7 +42,7 @@ import javax.persistence.Transient;
 import org.slf4j.LoggerFactory;
 
 /**
- * Each payment holds info about adding funds to customers account.
+ * Each payment holds info about adding funds (real money) to customers account.
  * Customer account receive funds through external payment systems. Here we are
  * recording transaction details for each payment system.
  * Successful payment have to create accounting debit record.
@@ -57,6 +58,8 @@ import org.slf4j.LoggerFactory;
     }
 )
 public class Payment implements JpEntity<Long> {
+
+    private static final long serialVersionUID = 6491268568658870088L;
 
     /**
      * Payment transaction started and we are waiting for completion (callback from payment system).
@@ -101,12 +104,12 @@ public class Payment implements JpEntity<Long> {
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "start_time", nullable = false)
-    private Date startTime;
+    private Calendar startTime;
 
     /**
      * Return timestamp when transaction was initiated
      */
-    public Date getStartTime() {
+    public Calendar getStartTime() {
         return startTime;
     }
 
@@ -114,25 +117,25 @@ public class Payment implements JpEntity<Long> {
      * Set transactions start time.
      * This should be timestamp from remote payment system.
      */
-    public void setStartTime(Date startTime) {
+    public void setStartTime(Calendar startTime) {
         this.startTime = startTime;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "complete_time")
-    private Date completeTime;
+    private Calendar completeTime;
 
     /**
      * Return timestamp when transaction was completed.
      */
-    public Date getCompleteTime() {
+    public Calendar getCompleteTime() {
         return completeTime;
     }
 
     /**
      * Set timestamp when jprocessing complete transaction.
      */
-    public void setCompleteTime(Date completeTime) {
+    public void setCompleteTime(Calendar completeTime) {
         this.completeTime = completeTime;
     }
 
@@ -175,21 +178,48 @@ public class Payment implements JpEntity<Long> {
         this.accountig = accountig;
     }
 
-    @Column(name = "sum", nullable = false)
-    private double sum;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "invoice_id", nullable = true)
+    private Invoice invoice;
+
+    /**
+     * Get invoice associated with current payment.
+     * Means that payment made by linked invoice.
+     */
+    public Invoice getInvoice() {
+        return invoice;
+    }
+
+    /**
+     * Set invoice associated with current payment.
+     * Means that payment will link only to provided invoice.
+     */
+    public void setInvoice(Invoice invoice) {
+        this.invoice = invoice;
+    }
+
+    @Column(name = "amount", nullable = false)
+    private BigDecimal amount;
 
     /**
      * Get amount of money related to this transaction
      */
-    public double getSum() {
-        return sum;
+    public BigDecimal getAmount() {
+        return amount;
     }
 
     /**
      * Set amount of money related to this transaction
      */
-    public void setSum(double sum) {
-        this.sum = sum;
+    public void setAmount(BigDecimal amount) {
+        this.amount = amount;
+    }
+
+    /**
+     * Set amount of money related to this transaction
+     */
+    public void setAmount(double amount) {
+        this.amount = BigDecimal.valueOf(amount);
     }
 
     @Column(name = "currency", length = 3, nullable = false)
@@ -262,11 +292,11 @@ public class Payment implements JpEntity<Long> {
      * Any changes on returned properties object will not be persisted.
      * Use setProperties to update entity values.
      */
-    public Properties getProperties() {
+    public Properties getPropertiesAsObj() {
         if (propertiesCache == null) {
             propertiesCache = new Properties();
             try {
-                propertiesCache.load(new StringReader(String.valueOf(getPropertiesString())));
+                propertiesCache.load(new StringReader(String.valueOf(getProperties())));
             } catch (IOException ex) {
                 LoggerFactory.getLogger(getClass()).error(ex.getMessage(), ex);
             }
@@ -277,7 +307,7 @@ public class Payment implements JpEntity<Long> {
     /**
      * Get additional properties associated with transaction and compatible with java Properties.
      */
-    public String getPropertiesString() {
+    public String getProperties() {
         return properties;
     }
 

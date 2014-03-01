@@ -30,6 +30,8 @@ import java.io.Serializable;
  */
 public interface PersistenceDao<PK extends Serializable, E extends JpEntity> {
 
+    
+    
     /**
      * Persist entity (create) to database
      */
@@ -61,6 +63,6 @@ public interface PersistenceDao<PK extends Serializable, E extends JpEntity> {
      */
     void remove(PK pk);
 
-    E findByPk();
+    E findByPk(PK pk);
 
 }

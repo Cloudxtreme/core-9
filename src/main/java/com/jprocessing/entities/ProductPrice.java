@@ -43,6 +43,8 @@ import javax.persistence.Table;
 @Table(name = "jp_products_prices")
 public class ProductPrice implements JpEntity<Long> {
 
+    private static final long serialVersionUID = -2858069664781262840L;
+
     @Id
     @Column(name = "id")
     private Long pk;

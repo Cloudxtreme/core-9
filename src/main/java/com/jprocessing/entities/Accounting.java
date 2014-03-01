@@ -21,7 +21,8 @@
  */
 package com.jprocessing.entities;
 
-import java.util.Date;
+import java.math.BigDecimal;
+import java.util.Calendar;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -44,6 +45,8 @@ import javax.persistence.TemporalType;
 @Table(name = "jp_accounting")
 public class Accounting implements JpEntity<Long> {
 
+    private static final long serialVersionUID = -5184193346979102514L;
+
     /**
      * Debit record type (any positive value).
      * Mean that customer account receiving money.
@@ -58,7 +61,7 @@ public class Accounting implements JpEntity<Long> {
 
     /**
      * Credit record type (any negative value).
-     * Mean that customer account withdrawing a money by ordering some products of services.
+     * Mean that customer account withdrawing a money by ordering some products or services.
      */
     public static final int TYPE_CREDIT = -1;
 
@@ -97,12 +100,12 @@ public class Accounting implements JpEntity<Long> {
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "timestamp", nullable = false)
-    private Date timestamp;
+    private Calendar timestamp;
 
     /**
      * Get record creation timestamp.
      */
-    public Date getTimestamp() {
+    public Calendar getTimestamp() {
         return timestamp;
     }
 
@@ -110,17 +113,17 @@ public class Accounting implements JpEntity<Long> {
      * Set record creation timestamp.
      * Do not change timestamp manually.
      */
-    public void setTimestamp(Date timestamp) {
+    public void setTimestamp(Calendar timestamp) {
         this.timestamp = timestamp;
     }
 
-    @Column(name = "amount", nullable = false)
-    private double amount;
+    @Column(name = "amount", precision = 2, nullable = false)
+    private BigDecimal amount;
 
     /**
      * Get Money transfer amount.
      */
-    public double getAmount() {
+    public BigDecimal getAmount() {
         return amount;
     }
 
@@ -129,8 +132,8 @@ public class Accounting implements JpEntity<Long> {
      * Negative value for credit. Positive value for debit. Summary value can be positive
      * and negative as well.
      */
-    public void setAmount(double amount) {
-        this.amount = amount;
+    public void setAmount(BigDecimal amount) {
+        this.amount = amount.setScale(4, BigDecimal.ROUND_HALF_UP);
     }
 
 }

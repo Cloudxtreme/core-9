@@ -34,6 +34,8 @@ import javax.persistence.Table;
 @Table(name = "jp_categories")
 public class Category implements JpEntity<Long> {
 
+    private static final long serialVersionUID = -4004404021944051672L;
+
     @Id
     @Column(name = "id")
     private Long pk;

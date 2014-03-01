@@ -37,6 +37,8 @@ import javax.persistence.Table;
 @Table(name = "jp_subscriptions")
 public class Subscription implements JpEntity<Long> {
 
+    private static final long serialVersionUID = -8396520859757389216L;
+
     @Id
     @Column(name = "id")
     private Long pk;

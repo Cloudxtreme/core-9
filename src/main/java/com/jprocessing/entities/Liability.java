@@ -21,7 +21,8 @@
  */
 package com.jprocessing.entities;
 
-import java.util.Date;
+import java.math.BigDecimal;
+import java.util.Calendar;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -38,11 +39,19 @@ import javax.persistence.TemporalType;
  * appropriate product entity and should be liked to accounting record which indicates payment
  * from customer internal account to company.
  *
+ * One accounting record can be linked with many liabilities in a case when it was created
+ * based on invoice with many invoice items, because in this case each liability relates
+ * to appropriate invoice item (product+quantity)
+ *
+ * Liability currency must be cached value from product or invoice item.
+ *
  * @author rumatoest
  */
 @Entity
 @Table(name = "jp_liabilities")
 public class Liability implements JpEntity<Long> {
+
+    private static final long serialVersionUID = 5771313956504071187L;
 
     @Id
     @Column(name = "id")
@@ -60,12 +69,12 @@ public class Liability implements JpEntity<Long> {
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "create_time", nullable = false)
-    private Date createTime;
+    private Calendar createTime;
 
     /**
      * Return timestamp when liability was created
      */
-    public Date getCreateTime() {
+    public Calendar getCreateTime() {
         return createTime;
     }
 
@@ -73,19 +82,19 @@ public class Liability implements JpEntity<Long> {
      * Set liability creation time.
      * For initial use only!
      */
-    public void setCreateTime(Date createTime) {
+    public void setCreateTime(Calendar createTime) {
         this.createTime = createTime;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "expire_time", nullable = true)
-    private Date expireTime;
+    private Calendar expireTime;
 
     /**
      * Return timestamp when this liability expired.
      * This is useful for services not physical products.
      */
-    public Date getExpireTime() {
+    public Calendar getExpireTime() {
         return expireTime;
     }
 
@@ -93,8 +102,32 @@ public class Liability implements JpEntity<Long> {
      * Set time when this liability will be expired.
      * Useful for service providing.
      */
-    public void setExpireTime(Date expireTime) {
+    public void setExpireTime(Calendar expireTime) {
         this.expireTime = expireTime;
+    }
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "accounting_id", nullable = true)
+    private Accounting accountig;
+
+    /**
+     * Get associated accounting record.
+     * One accounting record can be linked with many liabilities in a case when it was created
+     * based on invoice with many invoice items, because in this case each liability relates
+     * to appropriate invoice item (product+quantity)
+     */
+    public Accounting getAccountig() {
+        return accountig;
+    }
+
+    /**
+     * Set associated accounting record.
+     * One accounting record can be linked with many liabilities in a case when it was created
+     * based on invoice with many invoice items, because in this case each liability relates
+     * to appropriate invoice item (product+quantity)
+     */
+    public void setAccountig(Accounting accountig) {
+        this.accountig = accountig;
     }
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -116,31 +149,78 @@ public class Liability implements JpEntity<Long> {
         this.product = product;
     }
 
-    @Column(name = "quantity", nullable = false)
-    public double quantity;
+    @Column(name = "product_price", precision = 2, nullable = false)
+    public BigDecimal productPrice;
+
+    /**
+     * Get price per product single unit.
+     * Value at the moment when invoice or liability (if no invoice link) was created.
+     */
+    public BigDecimal getProductPrice() {
+        return productPrice;
+    }
+
+    /**
+     * Set price per product single unit.
+     * Value at the moment when invoice or liability (if no invoice link) was created.
+     */
+    public void setProductPrice(BigDecimal productPrice) {
+        this.productPrice = productPrice;
+    }
+
+    @Column(name = "currency", length = 3, nullable = false)
+    private String currency;
+
+    /**
+     * Get currency for product unit at moment when invoice or liability
+     * (if no invoice link) was created.
+     */
+    public String getCurrency() {
+        return currency;
+    }
+
+    /**
+     * Set currency for product unit at moment when invoice or liability
+     * (if no invoice link) was created.
+     */
+    public void setCurrency(String currency) {
+        this.currency = currency;
+    }
+
+    @Column(name = "quantity", precision = 4, nullable = false)
+    public BigDecimal quantity;
 
     /**
      * Get product (service) quantity for this liability
      */
-    public double getQuantity() {
+    public BigDecimal getQuantity() {
         return quantity;
     }
 
     /**
-     * Set product (service) quantity for this liability
+     * Set product (service) quantity for this liability.
+     * Stores value in DB with precision = 4
      */
-    public void setQuantity(double quantity) {
+    public void setQuantity(BigDecimal quantity) {
         this.quantity = quantity;
     }
 
+    /**
+     * Set product (service) quantity for this liability
+     * Stores value in DB with precision = 4
+     */
+    public void setQuantity(double quantity) {
+        this.quantity = BigDecimal.valueOf(quantity).setScale(4, BigDecimal.ROUND_HALF_UP);
+    }
+
     @Column(name = "price_total", nullable = false)
-    public double priceTotal;
+    public BigDecimal priceTotal;
 
     /**
      * Return total price for ordered product quantity.
      * Usually this is cached value from Accounting record.
      */
-    public double getPriceTotal() {
+    public BigDecimal getPriceTotal() {
         return priceTotal;
     }
 
@@ -148,8 +228,8 @@ public class Liability implements JpEntity<Long> {
      * Set total price for ordered product quantity.
      * Usually this is cached value from Accounting record.
      */
-    public void setPriceTotal(double priceTotal) {
-        this.priceTotal = priceTotal;
+    public void setPriceTotal(BigDecimal priceTotal) {
+        this.priceTotal = priceTotal.setScale(4, BigDecimal.ROUND_HALF_UP);
     }
 
 }
