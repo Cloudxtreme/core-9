@@ -19,57 +19,57 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.jprocessing.dao;
+package com.jprocessing.entities;
 
-import com.jprocessing.entities.JpEntity;
-import java.io.Serializable;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 /**
+ * This entity hold info about withdrawing money from customer account.
  *
  * @author rumatoest
  */
-public interface PersistenceDao<PK extends Serializable, E extends JpEntity> {
+@Entity
+@Table(name = "jp_withdraw")
+public class WithdrawFunds implements JpEntity<Long> {
+
+    private static final long serialVersionUID = 1L;
+
+    @Id
+    @Column(name = "id")
+    private Long pk;
+
+    @Override
+    public Long getPk() {
+        return pk;
+    }
+
+    @Override
+    public void setPk(Long primaryKey) {
+        this.pk = primaryKey;
+    }
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "accounting_id", nullable = false)
+    private Accounting accountig;
 
     /**
-     * Persist entity (create) to database
+     * Get associated accounting record
      */
-    void persist(E entity);
+    public Accounting getAccountig() {
+        return accountig;
+    }
 
     /**
-     * Persist entity to database or merge it if entity already exist.
+     * Set associated accounting record.
+     * This means that current payment transaction produced new record in accounting.
      */
-    void persistOrMerge(E entity);
-
-    /**
-     * Merge the state of the given entity into the current persistence context.
-     */
-    void merge(E entity);
-
-    /**
-     * Refresh the state of the instance from the database, overwriting changes
-     * made to the entity, if any.
-     */
-    void refresh(E entity);
-
-    /**
-     * Remove the entity instance from database.
-     */
-    void remove(E entity);
-
-    /**
-     * Remove the entity instance from database by primary key.
-     */
-    void remove(PK pk);
-
-    /**
-     * Return single entity by primary key or null if nothing was found.
-     * Means that primary key field is unique.
-     */
-    E getByPk(PK pk);
-
-    /**
-     * Force to fetch all related data with FetchType.LAZY type.
-     */
-    E fetchRelated(E entity);
-
+    public void setAccountig(Accounting accountig) {
+        this.accountig = accountig;
+    }
 }

@@ -169,7 +169,7 @@ public abstract class PersistenceDaoImpl<PK extends Serializable, E extends JpEn
     }
 
     @Override
-    public E findByPk(PK pk) {
+    public E getByPk(PK pk) {
         EntityManager em = createEntityManager();
         try {
             return em.find(getEntityClass(), pk);

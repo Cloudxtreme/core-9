@@ -29,5 +29,4 @@ import com.jprocessing.entities.Customer;
  */
 public interface CustomerDao extends PersistenceDao<Long, Customer> {
 
-    Customer getBySku(String sku);
 }

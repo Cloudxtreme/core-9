@@ -42,10 +42,11 @@ import javax.persistence.Transient;
 import org.slf4j.LoggerFactory;
 
 /**
- * Each payment holds info about adding funds (real money) to customers account.
+ * Each payment holds info about adding funds (money/refund) to customers account.
  * Customer account receive funds through external payment systems. Here we are
  * recording transaction details for each payment system.
  * Successful payment have to create accounting debit record.
+ * Also customer account may receive money as refunds from system.
  *
  * @author rumatoest
  */
@@ -71,6 +72,11 @@ public class Payment implements JpEntity<Long> {
      * Actually any positive value mean success.
      */
     public final int STATUS_SUCCESS = 1;
+
+    /**
+     * Successfully completed refund
+     */
+    public final int STATUS_SUCCESS_REFUND = 10;
 
     /**
      * Transaction completed with error (basically unknown).

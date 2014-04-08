@@ -21,53 +21,127 @@
  */
 package com.jprocessing.entities;
 
-import java.util.Set;
+import java.util.Calendar;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 /**
- * This class
+ * Holds customer object cache in JP data scheme.
+ * Used to link all related records via for foreign keys to customer.
+ * This record should not be deleted in any way. If you will delete customer from
+ * main database, than cache record in billing have to be disabled.
  *
  * @author rumatoest
  */
-public interface Customer extends JpEntity {
+@Entity
+@Table(name = "jp_customer")
+public class Customer implements JpEntity<Long> {
+
+    private static final long serialVersionUID = 1L;
+
+    @Id
+    @Column(name = "id")
+    private Long pk;
 
     /**
-     * Check if provided unencrypted password match internal customer's password hash.
-     */
-    public boolean checkPassword(String password);
-
-    /**
-     * Should return true if customer account is active
-     * or false if customer disabled
-     */
-    public boolean isActive();
-
-    /**
-     * Should return customer primary email.
-     * This email should be used for significant system notifications.
-     */
-    public String getEmail();
-
-    /**
-     * Return code names of the customers groups.
-     * This code names have to be as primary keys, we will not expect
-     * them to be changed.
-     * Group names have to match next pattern "[0-9A-Z-_]+".
-     * Only uppercase letters allowed.
+     * Return unique customer primary key.
+     * This key should be the same as billingId value in JpCustomer
      *
-     * @return List of groups or empty List
+     * @see JpCustomer
      */
-    public Set<String> getGroups();
+    @Override
+    public Long getPk() {
+        return pk;
+    }
 
     /**
-     * Return customer's login
+     * Set customer cache primary key.
+     *
+     * @param primaryKey Related to billingId value from JpCustomer
+     * @see JpCustomer
      */
-    public String getLogin();
+    @Override
+    public void setPk(Long primaryKey) {
+        this.pk = primaryKey;
+    }
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "updated", nullable = false)
+    private Calendar updated;
 
     /**
-     * Generates short string to identify customer up to 128 characters.
-     * I'm recommending to use next patterns:
-     * "LastName Name (Company)" or "LastName Name" for individuals.
+     * Get last time when this record data was updated
      */
-    public String getShortInfo();
+    public Calendar getUpdated() {
+        return updated;
+    }
 
+    /**
+     * Renew entity updated time
+     */
+    public void setUpdated(Calendar updated) {
+        this.updated = updated;
+    }
+
+    @Column(name = "active")
+    private boolean active = false;
+
+    /**
+     * Check if customer account is active.
+     * All operations on inactive accounts should be blocked,
+     * only incoming payments may be approved (just to log them).
+     */
+    public boolean isActive() {
+        return this.active;
+    }
+
+    /**
+     * Update account activity status.
+     */
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    @Column(name = "login", length = 32, nullable = false)
+    private String login;
+
+    public String getLogin() {
+        return this.login;
+    }
+
+    public void setLogin(String login) {
+        this.login = login;
+    }
+
+    @Column(name = "email", length = 32, nullable = false)
+    private String email;
+
+    public String getEmail() {
+        return this.email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    @Column(name = "info")
+    private String info;
+
+    /**
+     * Return short info about customer cache
+     */
+    public String getInfo() {
+        return info;
+    }
+
+    /**
+     * Update customer cache info
+     */
+    public void setInfo(String info) {
+        this.info = info;
+    }
 }
