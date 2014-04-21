@@ -21,55 +21,12 @@
  */
 package com.jprocessing.dao;
 
-import com.jprocessing.entities.JpEntity;
-import java.io.Serializable;
+import com.jprocessing.entities.Liability;
 
 /**
  *
  * @author rumatoest
  */
-public interface PersistenceDao<PK extends Serializable, E extends JpEntity> {
-
-    /**
-     * Persist entity (create) to database
-     */
-    void persist(E entity);
-
-    /**
-     * Persist entity to database or merge it if entity already exist.
-     */
-    void persistOrMerge(E entity);
-
-    /**
-     * Merge the state of the given entity into the current persistence context.
-     */
-    void merge(E entity);
-
-    /**
-     * Refresh the state of the instance from the database, overwriting changes
-     * made to the entity, if any.
-     */
-    void refresh(E entity);
-
-    /**
-     * Remove the entity instance from database.
-     */
-    void remove(E entity);
-
-    /**
-     * Remove the entity instance from database by primary key.
-     */
-    void remove(PK pk);
-
-    /**
-     * Return single entity by primary key or null if nothing was found.
-     * Means that primary key field is unique.
-     */
-    E getByPk(PK pk);
-
-    /**
-     * Force to fetch all related data with FetchType.LAZY type.
-     */
-    E fetchRelated(E entity);
+public interface LiabilityDao extends JpaDao<Long, Liability> {
 
 }

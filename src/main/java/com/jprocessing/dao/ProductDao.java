@@ -21,25 +21,12 @@
  */
 package com.jprocessing.dao;
 
-import com.jprocessing.entities.Customer;
-import com.jprocessing.entities.JpCustomer;
+import com.jprocessing.entities.Product;
 
 /**
  *
- * @see Customer
- * @see JpCustomer
- *
  * @author rumatoest
  */
-public interface CustomerDao extends JpaDao<Long, Customer> {
+public interface ProductDao extends JpaDao<Long, Product> {
 
-    /**
-     * Get or create Customer cache entity for external JpCustomer object.
-     * Will refresh Customer object from JpCustomer
-     * if Customer object was updated more than month ago.
-     *
-     * @param jpc Customer object from external system
-     * @return Jprocessing Customer cache entity
-     */
-    Customer getOrCreate(JpCustomer jpc);
 }

@@ -103,14 +103,21 @@ public class Product implements JpEntity<Long> {
         this.sku = productCode;
     }
 
-    @Column(name = "is_fractional", nullable = false)
-    private boolean fractional = false;
+    @Column(name = "is_available", nullable = false)
+    private boolean avaiable = true;
 
     /**
-     * Determine if product quantity can be measured in fractional numbers.
+     * Return true if product is available for purchase
      */
-    public boolean isFractional() {
-        return fractional;
+    public boolean isAvaiable() {
+        return avaiable;
+    }
+
+    /**
+     * Set product availability
+     */
+    public void setAvaiable(boolean avaiable) {
+        this.avaiable = avaiable;
     }
 
     @Column(name = "is_deleted", nullable = false)
@@ -131,21 +138,21 @@ public class Product implements JpEntity<Long> {
         this.deleted = deleted;
     }
 
-    @Column(name = "is_available", nullable = false)
-    private boolean avaiable = true;
+    @Column(name = "is_fractional", nullable = false)
+    private boolean fractional = false;
 
     /**
-     * Return true if product is available for purchase
+     * Determine if product quantity can be measured in fractional numbers.
      */
-    public boolean isAvaiable() {
-        return avaiable;
+    public boolean isFractional() {
+        return fractional;
     }
 
     /**
-     * Set product availability
+     * Determine if product quantity can be measured in fractional numbers.
      */
-    public void setAvaiable(boolean avaiable) {
-        this.avaiable = avaiable;
+    public void setFractional(boolean fractionalQuantity) {
+        this.fractional = fractionalQuantity;
     }
 
     @Enumerated(EnumType.STRING)
@@ -192,11 +199,23 @@ public class Product implements JpEntity<Long> {
         this.subscriptionPeriod = subscriptionPeriod;
     }
 
+    @Column(name = "bill_at_moth_beginning", nullable = false)
+    private boolean billAtMonthBeginning;
+
     /**
-     * Determine if product quantity can be measured in fractional numbers.
+     * Subscription for this product should be billed at month beginning.
+     * Should be used only if product subscription activated.
      */
-    public void setFractional(boolean fractionalQuantity) {
-        this.fractional = fractionalQuantity;
+    public boolean isBillAtMonthBeginning() {
+        return billAtMonthBeginning;
+    }
+
+    /**
+     * Determinte if subscription for this product should be billed at month beginning.
+     * Should be used only if product subscription activated.
+     */
+    public void setBillAtMonthBeginning(boolean billAtMonthBeginning) {
+        this.billAtMonthBeginning = billAtMonthBeginning;
     }
 
     @Column(name = "name", length = 90, nullable = false)

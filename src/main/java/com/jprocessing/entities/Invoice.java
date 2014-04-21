@@ -27,7 +27,10 @@ import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -92,6 +95,25 @@ public class Invoice implements JpEntity<Long> {
      */
     public void setPaymentTime(Calendar paymentTime) {
         this.paymentTime = paymentTime;
+    }
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "accounting_id", nullable = true)
+    private Accounting accountig;
+
+    /**
+     * Get associated accounting record
+     */
+    public Accounting getAccountig() {
+        return accountig;
+    }
+
+    /**
+     * Set associated accounting record.
+     * This means that current payment transaction produced new record in accounting.
+     */
+    public void setAccountig(Accounting accountig) {
+        this.accountig = accountig;
     }
 
     @OneToMany(mappedBy = "invoice",

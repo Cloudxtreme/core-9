@@ -43,6 +43,26 @@ public class Customer implements JpEntity<Long> {
 
     private static final long serialVersionUID = 1L;
 
+    public Customer() {
+    }
+
+    public Customer(JpCustomer jpc) {
+        this.pk = jpc.getBillingId();
+        this.login = jpc.getLogin();
+        this.email = jpc.getEmail();
+        this.active = jpc.isActive();
+        this.info = jpc.getShortInfo();
+        this.updated = Calendar.getInstance();
+    }
+
+    public void refresh(JpCustomer jpc) {
+        this.login = jpc.getLogin();
+        this.email = jpc.getEmail();
+        this.active = jpc.isActive();
+        this.info = jpc.getShortInfo();
+        this.updated = Calendar.getInstance();
+    }
+
     @Id
     @Column(name = "id")
     private Long pk;

@@ -19,21 +19,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.jprocessing.utils;
+package com.jprocessing.dao.impl;
+
+import com.jprocessing.dao.InvoiceItemDao;
+import com.jprocessing.entities.InvoiceItem;
+import javax.inject.Inject;
+import javax.persistence.EntityManagerFactory;
 
 /**
  *
  * @author rumatoest
  */
-public class Formatters {
+public class InvoiceItemDaoImpl extends JpaDaoImpl<Long, InvoiceItem> implements InvoiceItemDao {
 
-    /**
-     * Cast uppercase and trim input string null will convert to string.
-     */
-    public static String trimUpper(String s) {
-        if (s == null) {
-            return "";
-        }
-        return s.trim().toUpperCase();
+    @Inject
+    public InvoiceItemDaoImpl(EntityManagerFactory emf) {
+        super(emf);
     }
+
+    @Override
+    public InvoiceItem fetchRelated(InvoiceItem entity) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
 }

@@ -19,27 +19,39 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.jprocessing.dao;
+package com.jprocessing.dao.impl;
 
-import com.jprocessing.entities.Customer;
-import com.jprocessing.entities.JpCustomer;
+import com.jprocessing.dao.ProductDao;
+import com.jprocessing.entities.Product;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 
 /**
  *
- * @see Customer
- * @see JpCustomer
- *
  * @author rumatoest
  */
-public interface CustomerDao extends JpaDao<Long, Customer> {
+@Named("jpProductDao")
+public class ProductDaoImpl extends JpaDaoImpl<Long, Product> implements ProductDao {
 
-    /**
-     * Get or create Customer cache entity for external JpCustomer object.
-     * Will refresh Customer object from JpCustomer
-     * if Customer object was updated more than month ago.
-     *
-     * @param jpc Customer object from external system
-     * @return Jprocessing Customer cache entity
-     */
-    Customer getOrCreate(JpCustomer jpc);
+    @Inject
+    public ProductDaoImpl(EntityManagerFactory emf) {
+        super(emf);
+    }
+
+    public Product getBySku(String sku) {
+        EntityManager em = getEmf().createEntityManager();
+        CriteriaTriple<CriteriaBuilder, CriteriaQuery<Product>, Root<Product>> ct = initCriteriaQuery(em);
+        return getByRestrictionAndCloseEm(em, ct, ct.getBuilder().equal(ct.getRoot().get("sku"), sku));
+    }
+
+    @Override
+    public Product fetchRelated(Product entity) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
 }

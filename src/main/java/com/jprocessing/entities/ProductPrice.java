@@ -21,18 +21,19 @@
  */
 package com.jprocessing.entities;
 
-import com.jprocessing.utils.Enums;
-import com.jprocessing.utils.Formatters;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * This
@@ -113,28 +114,21 @@ public class ProductPrice implements JpEntity<Long> {
         this.minQuantity = minQuantity;
     }
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "price_model", nullable = false)
-    private String model;
+    private Model model = Model.FULL;
 
     /**
      * Return price model
      */
     public Model getModel() {
-        return Enums.getValueOf(Model.class, this.model);
+        return this.model;
     }
 
     /**
-     * Set price model from enum
+     * Set price model
      */
     public void setModel(Model model) {
-        this.model = model.toString();
-    }
-
-    /**
-     * Set price model from string code.
-     * This method is for internal usage only
-     */
-    public void setModel(String model) {
         this.model = model;
     }
 
@@ -199,7 +193,7 @@ public class ProductPrice implements JpEntity<Long> {
         StringBuilder sb = new StringBuilder();
 
         for (String g : groups) {
-            g = Formatters.trimUpper(g);
+            g = StringUtils.trimToEmpty(g).toUpperCase();
             if (g.isEmpty()) {
                 continue;
             }
@@ -238,17 +232,7 @@ public class ProductPrice implements JpEntity<Long> {
         /**
          * Full price paid by the purchaser
          */
-        FULL("F");
+        FULL;
 
-        private final String code;
-
-        private Model(String code) {
-            this.code = code;
-        }
-
-        @Override
-        public String toString() {
-            return this.code;
-        }
     }
 }

@@ -29,6 +29,8 @@ import java.util.Calendar;
 import java.util.Properties;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.Index;
@@ -63,36 +65,37 @@ public class Payment implements JpEntity<Long> {
     private static final long serialVersionUID = 6491268568658870088L;
 
     /**
-     * Payment transaction started and we are waiting for completion (callback from payment system).
+     * Hold transaction status codes.
      */
-    public final int STATUS_OPEN = 0;
+    public enum STATUS {
+        //Each code have to be about 10 characters length
 
-    /**
-     * Transaction successfully completed.
-     * Actually any positive value mean success.
-     */
-    public final int STATUS_SUCCESS = 1;
-
-    /**
-     * Successfully completed refund
-     */
-    public final int STATUS_SUCCESS_REFUND = 10;
-
-    /**
-     * Transaction completed with error (basically unknown).
-     * Any error is a negative value.
-     */
-    public final int STATUS_ERROR = -1;
-
-    /**
-     * Transaction closed over big timeout.
-     */
-    public final int STATUS_TIMEOUT = -10;
-
-    /**
-     * Fraud payment was detected
-     */
-    public final int STATUS_FRAUD = -20;
+        /**
+         * Payment transaction started and we are waiting for completion (callback from payment system etc.).
+         */
+        PENDING,
+        /**
+         * Payment transaction successfully completed.
+         * Usually means that real money income to system.
+         */
+        COMPLETE,
+        /**
+         * Successfully completed refund.
+         */
+        REFUND,
+        /**
+         * Transaction completed with error (basically unknown).
+         */
+        ERROR,
+        /**
+         * Transaction closed over big timeout.
+         */
+        TIMEOUT,
+        /**
+         * Fraud payment was detected
+         */
+        FRAUD
+    }
 
     @Id
     @Column(name = "id")
@@ -128,40 +131,42 @@ public class Payment implements JpEntity<Long> {
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "complete_time")
-    private Calendar completeTime;
+    @Column(name = "end_time")
+    private Calendar endTime;
 
     /**
-     * Return timestamp when transaction was completed.
+     * Return timestamp when transaction was completed/closed.
      */
-    public Calendar getCompleteTime() {
-        return completeTime;
+    public Calendar getEndTime() {
+        return endTime;
     }
 
     /**
-     * Set timestamp when jprocessing complete transaction.
+     * Set timestamp when jprocessing complete/close transaction.
      */
-    public void setCompleteTime(Calendar completeTime) {
-        this.completeTime = completeTime;
+    public void setEndTime(Calendar completeTime) {
+        this.endTime = completeTime;
     }
 
-    @Column(name = "status")
-    private int status = 0;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 15)
+    private STATUS status;
 
     /**
      * Return current transaction status.
-     * See STATUS_* constants.
+     *
+     * @see STATUS
      */
-    public int getStatus() {
+    public STATUS getStatus() {
         return status;
     }
 
     /**
      * Set transaction status.
-     * Note, that any non zero status mean that transaction have to be completed - complete time
-     * should not be null.
+     *
+     * @see STATUS
      */
-    public void setStatus(int status) {
+    public void setStatus(STATUS status) {
         this.status = status;
     }
 
@@ -284,7 +289,7 @@ public class Payment implements JpEntity<Long> {
     }
 
     @Lob
-    @Column(name = "properties", length = 2048)
+    @Column(name = "properties", length = 4096)
     private String properties;
 
     /**

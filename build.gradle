@@ -10,5 +10,6 @@ repositories {
 dependencies {
     compile 'javax:javaee-api:7.0'
     compile 'javax.inject:javax.inject:1'
+    compile 'org.apache.commons:commons-lang3:3.3.1'
     compile 'org.slf4j:slf4j-api:1.7.5'
 }

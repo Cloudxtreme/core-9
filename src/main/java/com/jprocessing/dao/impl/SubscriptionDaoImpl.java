@@ -19,27 +19,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.jprocessing.dao;
+package com.jprocessing.dao.impl;
 
-import com.jprocessing.entities.Customer;
-import com.jprocessing.entities.JpCustomer;
+import com.jprocessing.dao.SubscriptionDao;
+import com.jprocessing.entities.Subscription;
+import javax.inject.Inject;
+import javax.persistence.EntityManagerFactory;
 
 /**
  *
- * @see Customer
- * @see JpCustomer
- *
  * @author rumatoest
  */
-public interface CustomerDao extends JpaDao<Long, Customer> {
+public class SubscriptionDaoImpl extends JpaDaoImpl<Long, Subscription> implements SubscriptionDao {
 
-    /**
-     * Get or create Customer cache entity for external JpCustomer object.
-     * Will refresh Customer object from JpCustomer
-     * if Customer object was updated more than month ago.
-     *
-     * @param jpc Customer object from external system
-     * @return Jprocessing Customer cache entity
-     */
-    Customer getOrCreate(JpCustomer jpc);
+    @Inject
+    public SubscriptionDaoImpl(EntityManagerFactory emf) {
+        super(emf);
+    }
+
+    @Override
+    public Subscription fetchRelated(Subscription entity) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
 }

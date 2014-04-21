@@ -21,11 +21,12 @@
  */
 package com.jprocessing.dao.impl;
 
-import com.jprocessing.dao.PersistenceDao;
+import com.jprocessing.dao.JpaDao;
 import com.jprocessing.entities.JpEntity;
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.util.List;
+import javax.persistence.EntityExistsException;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityNotFoundException;
@@ -33,7 +34,9 @@ import javax.persistence.Query;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,11 +44,11 @@ import org.slf4j.LoggerFactory;
  *
  * @author rumatoest
  */
-public abstract class PersistenceDaoImpl<PK extends Serializable, E extends JpEntity> implements PersistenceDao<PK, E> {
+public abstract class JpaDaoImpl<PK extends Serializable, E extends JpEntity> implements JpaDao<PK, E> {
 
     private final EntityManagerFactory emf;
 
-    private static final Logger logger = LoggerFactory.getLogger(PersistenceDaoImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(JpaDaoImpl.class);
 
     /**
      * Subclass logger cache
@@ -54,7 +57,7 @@ public abstract class PersistenceDaoImpl<PK extends Serializable, E extends JpEn
 
     Class<E> entityClass;
 
-    protected PersistenceDaoImpl(EntityManagerFactory emf) {
+    protected JpaDaoImpl(EntityManagerFactory emf) {
         this.emf = emf;
         this.entityClass = (Class<E>)((ParameterizedType)getClass().getGenericSuperclass()).getActualTypeArguments()[1];
     }
@@ -91,14 +94,26 @@ public abstract class PersistenceDaoImpl<PK extends Serializable, E extends JpEn
         return getEmf().createEntityManager();
     }
 
+    /**
+     *
+     * @param em
+     * @return
+     */
+    public CriteriaTriple<CriteriaBuilder, CriteriaQuery<E>, Root<E>> initCriteriaQuery(EntityManager em) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<E> cq = cb.createQuery(getEntityClass());
+        Root<E> root = cq.from(getEntityClass());
+        return new CriteriaTriple<>(cb, cq, root);
+    }
+
     @Override
-    public void persist(E entity) {
+    public void persist(E entity) throws EntityExistsException {
         EntityManager em = createEntityManager();
         em.getTransaction().begin();
         try {
             em.persist(entity);
             em.getTransaction().commit();
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             em.getTransaction().rollback();
             throw ex;
         } finally {
@@ -118,7 +133,7 @@ public abstract class PersistenceDaoImpl<PK extends Serializable, E extends JpEn
         try {
             em.merge(entity);
             em.getTransaction().commit();
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             em.getTransaction().rollback();
             throw ex;
         } finally {
@@ -127,11 +142,11 @@ public abstract class PersistenceDaoImpl<PK extends Serializable, E extends JpEn
     }
 
     @Override
-    public void refresh(E entity) {
+    public void refresh(E entity) throws EntityNotFoundException {
         EntityManager em = createEntityManager();
         try {
             em.refresh(entity);
-        } catch (EntityNotFoundException ex) {
+        } catch (final EntityNotFoundException ex) {
             logger.warn("Can not regresh entity because it was not found in context " + entity);
         } finally {
             em.close();
@@ -158,7 +173,10 @@ public abstract class PersistenceDaoImpl<PK extends Serializable, E extends JpEn
         EntityManager em = createEntityManager();
         em.getTransaction().begin();
         try {
-            em.remove(em.find(getEntityClass(), pk));
+            E e = em.find(getEntityClass(), pk);
+            if (e != null) {
+                em.remove(e);
+            }
             em.getTransaction().commit();
         } catch (Exception ex) {
             em.getTransaction().rollback();
@@ -183,20 +201,58 @@ public abstract class PersistenceDaoImpl<PK extends Serializable, E extends JpEn
      * @param em Entity manager for query - Will be closed after method execution.
      * @param restriction JPA restriction from CriteriaBuilder
      */
-    protected List<E> findByRestriction(EntityManager em, Integer offsetStart, Integer fetchSize,
-        Expression<Boolean> restriction) {
+    protected E getByRestriction(EntityManager em,
+        Triple<CriteriaBuilder, CriteriaQuery<E>, Root<E>> queryTriple, Predicate... restrictions) {
+        queryTriple.getMiddle()
+            .select(queryTriple.getMiddle().from(getEntityClass()))
+            .where(restrictions);
+        Query q = em.createQuery(queryTriple.getMiddle());
+        return (E)q.getSingleResult();
+    }
+
+    /**
+     *
+     * @param em Entity manager for query - Will be closed after method execution.
+     * @param restriction JPA restriction from CriteriaBuilder
+     */
+    protected E getByRestrictionAndCloseEm(EntityManager em,
+        Triple<CriteriaBuilder, CriteriaQuery<E>, Root<E>> queryTriple, Predicate... restrictions) {
         try {
-            CriteriaBuilder cb = em.getCriteriaBuilder();
-            CriteriaQuery<E> cq = cb.createQuery(getEntityClass());
-            cq.select(cq.from(getEntityClass())).where(restriction);
-            Query q = em.createQuery(cq);
-            if (fetchSize != null) {
-                q.setMaxResults(fetchSize);
-            }
-            if (offsetStart != null) {
-                q.setFirstResult(offsetStart);
-            }
-            return q.getResultList();
+            return getByRestriction(em, queryTriple, restrictions);
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     *
+     * @param em Entity manager for query - Will be closed after method execution.
+     * @param restriction JPA restriction from CriteriaBuilder
+     */
+    protected List<E> findByRestriction(EntityManager em, Integer offsetStart, Integer fetchSize,
+        Triple<CriteriaBuilder, CriteriaQuery<E>, Root<E>> queryTriple, Predicate... restrictions) {
+        queryTriple.getMiddle()
+            .select(queryTriple.getMiddle().from(getEntityClass()))
+            .where(restrictions);
+        Query q = em.createQuery(queryTriple.getMiddle());
+        if (fetchSize != null) {
+            q.setMaxResults(fetchSize);
+        }
+        if (offsetStart != null) {
+            q.setFirstResult(offsetStart);
+        }
+        return q.getResultList();
+    }
+
+    /**
+     *
+     * @param em Entity manager for query - Will be closed after method execution.
+     * @param restriction JPA restriction from CriteriaBuilder
+     */
+    protected List<E> findByRestrictionAndCloseEm(EntityManager em, Integer offsetStart, Integer fetchSize,
+        Triple<CriteriaBuilder, CriteriaQuery<E>, Root<E>> queryTriple, Predicate... restrictions) {
+        try {
+            return findByRestriction(em, offsetStart, fetchSize, queryTriple, restrictions);
         } finally {
             em.close();
         }
@@ -226,7 +282,7 @@ public abstract class PersistenceDaoImpl<PK extends Serializable, E extends JpEn
      * @param restriction JPA restriction from CriteriaBuilder
      * @return Not null
      */
-    protected Long getRowsCountBy(EntityManager em, Expression<Boolean> restriction) {
+    protected Long getRowsCountByRestriction(EntityManager em, Expression<Boolean> restriction) {
         try {
             CriteriaBuilder cb = em.getCriteriaBuilder();
             CriteriaQuery<Long> cq = cb.createQuery(Long.class);
@@ -234,6 +290,56 @@ public abstract class PersistenceDaoImpl<PK extends Serializable, E extends JpEn
             return em.createQuery(cq).getSingleResult();
         } finally {
             em.close();
+        }
+    }
+
+    /**
+     * Immutable triple (QueryBuilder, CriteriaQuery, Root).
+     * Contains all required objects to generate JPA queries.
+     *
+     * @param <B> Criteria builder
+     * @param <Q> Criteria query based on root entity class
+     * @param <R> Root for entity class
+     */
+    protected static class CriteriaTriple<B extends CriteriaBuilder, Q extends CriteriaQuery, R extends Root> extends Triple {
+
+        private final B builder;
+
+        private final Q query;
+
+        private final R root;
+
+        public CriteriaTriple(B builder, Q query, R root) {
+            this.builder = builder;
+            this.query = query;
+            this.root = root;
+        }
+
+        @Override
+        public B getLeft() {
+            return this.builder;
+        }
+
+        @Override
+        public Q getMiddle() {
+            return this.query;
+        }
+
+        @Override
+        public R getRight() {
+            return this.root;
+        }
+
+        public B getBuilder() {
+            return builder;
+        }
+
+        public Q getQuery() {
+            return query;
+        }
+
+        public R getRoot() {
+            return root;
         }
     }
 

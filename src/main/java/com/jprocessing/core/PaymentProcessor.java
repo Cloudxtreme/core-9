@@ -19,43 +19,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.jprocessing.utils;
+package com.jprocessing.core;
+
+import java.util.Map;
 
 /**
  *
  * @author rumatoest
  */
-public class Enums {
+public interface PaymentProcessor {
 
-    /**
-     * Return enum value for ordinal (index) code.
-     * 
-     * @param enumClass You should provide enum.class first
-     * @param code Enum index
-     */
-    public static <E extends Enum<E>> E getValueOf(Class<E> enumClass, int code) {
-        for (E e : enumClass.getEnumConstants()) {
-            if (e.ordinal() == code) {
-                return e;
-            }
-        }
-        throw new IllegalArgumentException("No enum const "
-                + enumClass.getName() + " for code \'" + code + "\'");
-    }
-
-    /**
-     * Return enum value for provided string representation
-     * 
-     * @param enumClass You should provide enum.class first
-     * @param valu String representasion of enum (toString() used)
-     */
-    public static <E extends Enum<E>> E getValueOf(Class<E> enumClass, String val) {
-        for (E e : enumClass.getEnumConstants()) {
-            if (e.toString().equals(val)) {
-                return e;
-            }
-        }
-        throw new IllegalArgumentException("No enum const "
-                + enumClass.getName() + " for value \'" + val + "\'");
-    }
+    void callbackListener(Map<String, Object> params);
 }
